@@ -1,0 +1,93 @@
+volumes:
+  db_data:
+  nats_data:
+      driver: local
+  minio_data:
+    driver: local
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: go_api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      NATS_URL: nats://nats:4222
+      MINIO_ENDPOINT: minio:9000
+    depends_on:
+      - db
+      - nats
+      - minio
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    container_name: go_worker
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      NATS_URL: nats://nats:4222
+      MINIO_ENDPOINT: minio:9000
+    depends_on:
+      - db
+      - nats
+      - minio
+  db:
+    image: pgvector/pgvector:pg18-trixie
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql
+  nats:
+    image: nats:latest
+    container_name: nats-jetstream
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats_data:/data
+    command: [
+      "-js",
+      "-sd", "/data",
+      "-m", "8222",
+    ]
+    restart: unless-stopped
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    env_file:
+      - ./.env
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: ["server", "/data", "--console-address", ":9001"]
+    restart: unless-stopped
+  migrate:
+    image: migrate/migrate:v4.18.1
+    profiles: [ "tools" ]
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: [
+      "migrate",
+      "-path=/migrations",
+      "-database=${DOCKER_DATABASE_URL}",
+    ]

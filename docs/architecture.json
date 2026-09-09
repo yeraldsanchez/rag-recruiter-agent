@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "RAG Recruiter Agent - System Architecture",
+    "quality_profile": "standard",
+    "viewBox": [900, 700]
+  },
+  "components": [
+    {
+      "id": "clients",
+      "type": "frontend",
+      "label": "Users",
+      "pos": [50, 40]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API",
+      "sublabel": "Go/Gin",
+      "pos": [50, 150],
+      "size": [100, 70]
+    },
+    {
+      "id": "minio",
+      "type": "cloud",
+      "label": "MinIO",
+      "pos": [380, 100],
+      "size": [100, 70]
+    },
+    {
+      "id": "nats",
+      "type": "messagebus",
+      "label": "NATS",
+      "pos": [220, 200],
+      "size": [100, 70]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Worker",
+      "pos": [220, 300],
+      "size": [100, 70]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "DB",
+      "pos": [220, 400],
+      "size": [100, 70]
+    },
+    {
+      "id": "gemini",
+      "type": "external",
+      "label": "Gemini",
+      "pos": [50, 500],
+      "size": [100, 70]
+    }
+  ],
+  "connections": [
+    {
+      "from": "clients",
+      "to": "api",
+      "label": "HTTP",
+      "route": "orthogonal-v"
+    },
+    {
+      "from": "api",
+      "to": "minio",
+      "label": "Upload",
+      "route": "orthogonal-h"
+    },
+    {
+      "from": "api",
+      "to": "nats",
+      "label": "Publish",
+      "route": "orthogonal-h"
+    },
+    {
+      "from": "nats",
+      "to": "worker",
+      "label": "Subscribe",
+      "route": "orthogonal-v",
+      "labelDy": 20
+    },
+    {
+      "from": "worker",
+      "to": "minio",
+      "label": "Read",
+      "route": "orthogonal-h"
+    },
+    {
+      "from": "worker",
+      "to": "postgres",
+      "label": "Store",
+      "route": "orthogonal-v",
+      "labelDy": 20
+    },
+    {
+      "from": "api",
+      "to": "postgres",
+      "label": "Query",
+      "route": "orthogonal-h"
+    },
+    {
+      "from": "api",
+      "to": "gemini",
+      "label": "Eval",
+      "route": "orthogonal-v"
+    },
+    {
+      "from": "worker",
+      "to": "gemini",
+      "label": "Embed",
+      "route": "orthogonal-h"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS resume_chunks;
+DROP TABLE IF EXISTS resumes;
+DROP TABLE IF EXISTS candidates;
+DROP EXTENSION IF EXISTS vector;
