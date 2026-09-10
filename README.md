@@ -35,7 +35,9 @@ It uses an event-driven setup to handle file storage, background processing, and
 
 The system uses an event-driven, decoupled architecture to separate HTTP handling from heavy background tasks (PDF text extraction, embedding generation, and vector indexing).
 
-![System Architecture](docs/rag-recruiter-agent---system.svg)
+[![System Architecture](docs/rag-recruiter-agent---system.svg)](https://yeraldsanchez.github.io/rag-recruiter-agent/architecture.html?present=1)
+
+>**[Click here to open the interactive architecture diagram in full screen.](https://yeraldsanchez.github.io/rag-recruiter-agent/architecture.html?present=1)**
 
 - **API:** Serves client requests, saves raw uploads, queries embeddings, and triggers GenAI evaluations.
 
